@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+<div class="container">
+    <table class="table table-bordered">
+        <tr>
+            <th>#</th>
+            <th>Patente</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Tipo Maquinaria</th>
+            <th>Opciones</th>
+        </tr>
+        {% for maquinaria in maquinarias %}
+        <tr>
+            <th>{{ loop.index }}</th>
+            <th>{{ maquinaria.0 }}</th>
+            <th>{{ maquinaria.1 }}</th>
+            <th>{{ maquinaria.2 }}</th>
+            <th>{{ maquinaria.3 }}</th>
+            <th>
+                <a href="/maquinarias/edit/{{ maquinaria.0 }}">EDITAR</a>
+                <a href="/maquinarias/delete/{{ maquinaria.0 }}">ELIMINAR</a>
+            </th>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}
