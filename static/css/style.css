@@ -1,0 +1,33 @@
+*{
+    padding: 0px;
+    margin: 0px;
+}
+
+body{
+    background-color: gray;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box{
+    background-color: brown;
+    width: 30%;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    padding: 5%;
+    color:white;
+    font-weight: bold;
+    border-radius: 10px;
+
+}
+
+.title-login{
+    font-weight: bold;
+}
+
+.submit{
+    margin-top: 20px;
+}
