@@ -26,25 +26,24 @@ class Maquinaria(Conexion):
         maquinarias = self.collection_name.find()
         output = []
         for maquinaria in maquinarias:
-            output.append({'PATENTE' : maquinaria['patente'],
-                            'MARCA' : maquinaria['marca'],
+            output.append({ 'MARCA' : maquinaria['marca'],
                             'MODELO' : maquinaria['modelo'],
                             'TIPO' : maquinaria['tipo'],
                             'PRECIO' : maquinaria['precio'],
                             'ESTADO' : maquinaria['estado'],
-                            'ID' : str(maquinaria['_id'])})
+                            'ID(PATENTE)' : str(maquinaria['_id'])})
 
         return jsonify({'result' : output})
     
     def findOne(self, _patente):
-        maquinaria = self.collection_name.find_one({'patente' : _patente})
+        maquinaria = self.collection_name.find_one({'_id' : _patente})
 
-        return jsonify({'patente' : maquinaria['patente']
-                        ,'marca' : maquinaria['marca']
-                        ,'modelo' : maquinaria['modelo']
-                        ,'tipo' : maquinaria['tipo']
-                        ,'precio' : maquinaria['precio']
-                        ,'estado' : maquinaria['estado']})
+        return jsonify({'MARCA' : maquinaria['marca'],
+                        'MODELO' : maquinaria['modelo'],
+                        'TIPO' : maquinaria['tipo'],
+                        'PRECIO' : maquinaria['precio'],
+                        'ESTADO' : maquinaria['estado'],
+                        'ID(PATENTE)' : str(maquinaria['_id'])})
 
     def create_one(self,request):
         patente = request['patente']
@@ -341,6 +340,38 @@ def delete_maquinaria(patente):
         resp = jsonify('MAQUINARIA DELETE SUCCEFULLY')
         resp.status_code = 200
         return resp
+
+@app.route('/clientes/create', methods = ["POST"])
+def add_cliente():
+    if request.method == 'POST':
+        _json = request.json
+
+        Cliente().create_one(_json)
+        
+        resp = jsonify('CLIENTE ADDED SUCCEFULLY')
+        resp.status_code = 200
+        return resp
+
+@app.route('/clientes', methods = ["GET"])
+def findAll_cliente():
+    if request.method == 'GET':
+        return Cliente().findAll()
+
+@app.route('/operadores/create', methods = ["POST"])
+def add_operador():
+    if request.method == 'POST':
+        _json = request.json
+
+        Operador().create_one(_json)
+        
+        resp = jsonify('OPERADOR ADDED SUCCEFULLY')
+        resp.status_code = 200
+        return resp
+
+@app.route('/operadores', methods = ["GET"])
+def findAll_operadores():
+    if request.method == 'GET':
+        return Operador().findAll()
 
 if __name__ == '__main__':
     app.run(port = 3000,debug = True)
