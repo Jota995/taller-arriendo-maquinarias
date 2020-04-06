@@ -4,10 +4,12 @@ from flask_pymongo import pymongo
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from flask import jsonify
+from flask_cors import CORS
 
 
 app = Flask(__name__)
 app.secret_key = "my_secret_key"
+CORS(app)
 
 #clase padre que contiene los datos de conexion
 class Conexion():
@@ -31,33 +33,33 @@ class Maquinaria(Conexion):
                             'TIPO' : maquinaria['tipo'],
                             'PRECIO' : maquinaria['precio'],
                             'ESTADO' : maquinaria['estado'],
-                            'ID(PATENTE)' : str(maquinaria['_id'])})
+                            'PATENTE' : maquinaria['patente']})
 
         return jsonify({'result' : output})
     
     def findOne(self, _patente):
-        maquinaria = self.collection_name.find_one({'_id' : _patente})
+        maquinaria = self.collection_name.find_one({'patente' : _patente})
 
         return jsonify({'MARCA' : maquinaria['marca'],
                         'MODELO' : maquinaria['modelo'],
                         'TIPO' : maquinaria['tipo'],
                         'PRECIO' : maquinaria['precio'],
                         'ESTADO' : maquinaria['estado'],
-                        'ID(PATENTE)' : str(maquinaria['_id'])})
+                        'PATENTE' : maquinaria['patente']})
 
     def create_one(self,request):
         patente = request['patente']
         marca = request['marca']
-        modelo = request['modelo']
         tipo = request['tipo']
         precio = request['precio']
+        modelo = request['modelo']
 
         return self.collection_name.insert_one({'patente' : patente
                                                 ,'marca' : marca
-                                                ,'modelo' : modelo
                                                 ,'tipo' : tipo
                                                 ,'precio' : precio
-                                                ,'estado' : 'DISPONIBLE'})
+                                                ,'modelo' : modelo
+                                                ,'estado' : 'EN ARRIENDO'})
     
     def update_one(self,patente,request):
         marca = request['marca']
@@ -106,22 +108,22 @@ class Operador(Conexion):
         operadores = self.collection_name.find()
         output = []
         for operador in operadores:
-            output.append({'RUT' : maquinaria['rut'],
-                            'NOMBRE' : maquinaria['nombre'],
-                            'EMAIL' : maquinaria['email'],
-                            'PRECIO' : maquinaria['precio'],
-                            'ESTADO' : maquinaria['estado']})
+            output.append({'RUT' : operador['rut'],
+                            'NOMBRE' : operador['nombre'],
+                            'EMAIL' : operador['email'],
+                            'PRECIO' : operador['precio'],
+                            'ESTADO' : operador['estado']})
 
         return jsonify({'result' : output})
     
     def findOne(self, _rut):
         operador = self.collection_name.find_one({'rut' : _rut})
 
-        return jsonify({'RUT' : maquinaria['rut'],
-                        'NOMBRE' : maquinaria['nombre'],
-                        'EMAIL' : maquinaria['email'],
-                        'PRECIO' : maquinaria['precio'],
-                        'ESTADO' : maquinaria['estado']})
+        return jsonify({'RUT' : operador['rut'],
+                        'NOMBRE' : operador['nombre'],
+                        'EMAIL' : operador['email'],
+                        'PRECIO' : operador['precio'],
+                        'ESTADO' : operador['estado']})
 
     def create_one(self,request):
         rut = request['rut']
@@ -180,22 +182,22 @@ class Cliente(Conexion):
         clientes = self.collection_name.find()
         output = []
         for cliente in clientes:
-            output.append({'RUT' : maquinaria['rut'],
-                            'NOMBRE' : maquinaria['nombre'],
-                            'EMAIL' : maquinaria['email'],
-                            'DIRECCION' : maquinaria['direccion'],
-                            'ESTADO' : maquinaria['estado']})
+            output.append({'RUT' : cliente['rut'],
+                            'NOMBRE' : cliente['nombre'],
+                            'EMAIL' : cliente['email'],
+                            'DIRECCION' : cliente['direccion'],
+                            'ESTADO' : cliente['estado']})
 
         return jsonify({'result' : output})
     
     def findOne(self, _rut):
-        operador = self.collection_name.find_one({'rut' : _rut})
+        cliente = self.collection_name.find_one({'rut' : _rut})
 
-        return jsonify({'RUT' : maquinaria['rut'],
-                        'NOMBRE' : maquinaria['nombre'],
-                        'EMAIL' : maquinaria['email'],
-                        'DIRECCION' : maquinaria['direccion'],
-                        'ESTADO' : maquinaria['estado']})
+        return jsonify({'RUT' : cliente['rut'],
+                        'NOMBRE' : cliente['nombre'],
+                        'EMAIL' : cliente['email'],
+                        'DIRECCION' : cliente['direccion'],
+                        'ESTADO' : cliente['estado']})
 
     def create_one(self,request):
         rut = request['rut']
@@ -313,10 +315,9 @@ def findOne_maquinaria(_patente):
 def add_maquinaria():
     if request.method == 'POST':
         _json = request.json
-
         Maquinaria().create_one(_json)
-        
-        resp = jsonify('MAQUINARIA ADDED SUCCEFULLY')
+
+        resp = jsonify('ARRIENDO ADDED SUCCEFULLY')
         resp.status_code = 200
         return resp
 
