@@ -8,8 +8,8 @@ from flask_cors import CORS
 
 
 app = Flask(__name__)
-app.secret_key = "my_secret_key"
 CORS(app)
+app.secret_key = "my_secret_key"
 
 #clase padre que contiene los datos de conexion
 class Conexion():
@@ -50,16 +50,16 @@ class Maquinaria(Conexion):
     def create_one(self,request):
         patente = request['patente']
         marca = request['marca']
+        modelo = request['modelo']
         tipo = request['tipo']
         precio = request['precio']
-        modelo = request['modelo']
 
         return self.collection_name.insert_one({'patente' : patente
                                                 ,'marca' : marca
+                                                ,'modelo' : modelo
                                                 ,'tipo' : tipo
                                                 ,'precio' : precio
-                                                ,'modelo' : modelo
-                                                ,'estado' : 'EN ARRIENDO'})
+                                                ,'estado' : 'DISPONIBLE'})
     
     def update_one(self,patente,request):
         marca = request['marca']
@@ -152,7 +152,7 @@ class Operador(Conexion):
             }
         )
     
-    def update_en_arriendo(self,patente):
+    def update_en_arriendo(self,rut):
         return self.collection_name.update_one(
             {'rut' : rut},
             {
@@ -191,7 +191,7 @@ class Cliente(Conexion):
         return jsonify({'result' : output})
     
     def findOne(self, _rut):
-        cliente = self.collection_name.find_one({'rut' : _rut})
+        operador = self.collection_name.find_one({'rut' : _rut})
 
         return jsonify({'RUT' : cliente['rut'],
                         'NOMBRE' : cliente['nombre'],
@@ -246,8 +246,8 @@ class Arriendo(Conexion):
         arriendos = self.collection_name.find()
         output = []
         for arriendo in arriendos:
-            output.append({'FECHA INICIO' : arriendo['fecha inicio'],
-                            'FECHA TERMINO' : arriendo['fecha termino'],
+            output.append({'FECHAINICIO' : arriendo['fecha inicio'],
+                            'FECHATERMINO' : arriendo['fecha termino'],
                             'CLIENTE' : arriendo['cliente'],
                             'ESTADO' : arriendo['estado'],
                             'OPERADORES' : arriendo['operadores'],
@@ -259,8 +259,8 @@ class Arriendo(Conexion):
     def findOne(self, id):
         arriendo = self.collection_name.find_one({'_id': ObjectId(id)})
 
-        return jsonify({'FECHA INICIO' : arriendo['fecha inicio'],
-                        'FECHA TERMINO' : arriendo['fecha termino'],
+        return jsonify({'FECHAINICIO' : arriendo['fecha inicio'],
+                        'FECHATERMINO' : arriendo['fecha termino'],
                         'CLIENTE' : arriendo['cliente'],
                         'MAQUINARIAS' : arriendo['maquinarias'],
                         'OPERADORES' : arriendo['operadores'],
@@ -285,7 +285,21 @@ class Arriendo(Conexion):
 def add_arriendos():
     if request.method == 'POST':
         _json = request.json
-        Arriendo().create_one(_json)
+
+        _arriendo = Arriendo()
+        _maquinaria = Maquinaria()
+        _operador = Operador()
+
+        maquinarias = _json['maquinarias']
+        operadores = _json['operadores']
+
+        for maquinaria in maquinarias :
+            _maquinaria.update_en_arriendo(maquinaria)
+        
+        for operador in operadores:
+            _operador.update_en_arriendo(operador)
+
+        _arriendo.create_one(_json)
 
         resp = jsonify('ARRIENDO ADDED SUCCEFULLY')
         resp.status_code = 200
@@ -315,9 +329,10 @@ def findOne_maquinaria(_patente):
 def add_maquinaria():
     if request.method == 'POST':
         _json = request.json
-        Maquinaria().create_one(_json)
 
-        resp = jsonify('ARRIENDO ADDED SUCCEFULLY')
+        Maquinaria().create_one(_json)
+        
+        resp = jsonify('MAQUINARIA ADDED SUCCEFULLY')
         resp.status_code = 200
         return resp
 
@@ -373,6 +388,27 @@ def add_operador():
 def findAll_operadores():
     if request.method == 'GET':
         return Operador().findAll()
+
+@app.route('/operadores/<string:_rut>/update', methods = ["POST"])
+def update_operadores(_rut):
+    if request.method == 'POST':
+        _json = request.json
+
+        operador = Operador().update_one(_rut,_json)
+        
+        resp = jsonify('OPERADOR UPDATE SUCCEFULLY')
+        resp.status_code = 200
+        return resp
+
+@app.route('/operadores/<string:_rut>/delete', methods = ["GET"])
+def delete_operador(_rut):
+    if request.method == 'GET':
+
+        operador = Operador().delete(_rut)
+        
+        resp = jsonify('OPERADOR DELETE SUCCEFULLY')
+        resp.status_code = 200
+        return resp
 
 if __name__ == '__main__':
     app.run(port = 3000,debug = True)
